@@ -1,15 +1,13 @@
 {
   "version": 2,
+  "rewrites": [
+    { "source": "/generate-qr", "destination": "/api/generate-qr" },
+    { "source": "/download-template", "destination": "/api/download-template" }
+  ],
   "functions": {
     "api/**/*.js": {
       "maxDuration": 60,
       "memory": 1024
     }
-  },
-  "rewrites": [
-    {
-      "source": "/",
-      "destination": "/public/index.html"
-    }
-  ]
+  }
 }
