@@ -128,12 +128,12 @@ module.exports = async (req, res) => {
                 }
             });
 
-            // สร้าง canvas แบบง่าย - แสดงเฉพาะ QR Code ไม่มีข้อความ
-            // (เพราะข้อมูลอยู่ใน QR Code อยู่แล้ว)
+            // สร้าง canvas พร้อมข้อความใต้ QR Code
             const qrImage = await loadImage(qrBuffer);
             const padding = 20;
+            const textHeight = 40; // พื้นที่สำหรับข้อความ
             const canvasWidth = qrImage.width + (padding * 2);
-            const canvasHeight = qrImage.height + (padding * 2);
+            const canvasHeight = qrImage.height + (padding * 2) + textHeight;
             const canvas = createCanvas(canvasWidth, canvasHeight);
             const ctx = canvas.getContext('2d');
 
@@ -141,8 +141,19 @@ module.exports = async (req, res) => {
             ctx.fillStyle = '#FFFFFF';
             ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-            // วาด QR Code ตรงกลาง
+            // วาด QR Code
             ctx.drawImage(qrImage, padding, padding);
+
+            // เพิ่มข้อความใต้ QR Code
+            const displayText = row.Code ? row.Code.toString() : `Row ${index + 1}`;
+            
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 18px Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            const textY = padding + qrImage.height + (textHeight / 2);
+            ctx.fillText(displayText, canvasWidth / 2, textY);
 
             // บันทึกเป็นไฟล์ PNG
             const buffer = canvas.toBuffer('image/png');
