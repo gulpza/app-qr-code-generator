@@ -91,9 +91,9 @@ module.exports = async (req, res) => {
         }
 
         // จำกัดจำนวนแถวเพื่อป้องกัน timeout
-        if (data.length > 100) {
+        if (data.length > 1000) {
             return res.status(400).json({ 
-                error: `ไฟล์มีข้อมูลมากเกินไป (${data.length} แถว) กรุณาใช้ไฟล์ที่มีข้อมูลไม่เกิน 100 แถว` 
+                error: `ไฟล์มีข้อมูลมากเกินไป (${data.length} แถว) กรุณาใช้ไฟล์ที่มีข้อมูลไม่เกิน 1000 แถว` 
             });
         }
 
