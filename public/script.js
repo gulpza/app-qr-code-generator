@@ -63,35 +63,62 @@ document.addEventListener('DOMContentLoaded', function() {
             if (response.ok) {
                 updateProgress(90, 'กำลังสร้าง QR Code...');
                 
-                // รับไฟล์ ZIP
-                const blob = await response.blob();
+                // ตรวจสอบ content type ก่อน
+                const contentType = response.headers.get('content-type');
                 
-                updateProgress(100, 'เสร็จสิ้น!');
-                
-                // สร้างลิงค์ดาวน์โหลด
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `qr-codes-${new Date().getTime()}.zip`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-
-                // แสดงข้อความสำเร็จ
-                setTimeout(() => {
-                    stopProgress();
-                    showSuccess();
+                if (contentType && contentType.includes('application/zip')) {
+                    // รับไฟล์ ZIP
+                    const blob = await response.blob();
                     
-                    // รีเซ็ตฟอร์มหลังจาก 3 วินาที
+                    updateProgress(100, 'เสร็จสิ้น!');
+                    
+                    // สร้างลิงค์ดาวน์โหลด
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `qr-codes-${new Date().getTime()}.zip`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+
+                    // แสดงข้อความสำเร็จ
                     setTimeout(() => {
-                        resetForm();
-                    }, 3000);
-                }, 1000);
+                        stopProgress();
+                        showSuccess();
+                        
+                        // รีเซ็ตฟอร์มหลังจาก 3 วินาที
+                        setTimeout(() => {
+                            resetForm();
+                        }, 3000);
+                    }, 1000);
+                } else {
+                    // ไม่ใช่ ZIP file - อาจเป็น error
+                    const text = await response.text();
+                    console.error('Unexpected response:', text);
+                    throw new Error('Server ไม่ได้ส่งไฟล์ ZIP กลับมา กรุณาลองใหม่อีกครั้ง');
+                }
 
             } else {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'เกิดข้อผิดพลาดในการประมวลผลไฟล์');
+                // จัดการ error response
+                const contentType = response.headers.get('content-type');
+                
+                if (contentType && contentType.includes('application/json')) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'เกิดข้อผิดพลาดในการประมวลผลไฟล์');
+                } else {
+                    // Server ส่ง HTML หรือ text กลับมา
+                    const text = await response.text();
+                    console.error('Server response:', text);
+                    
+                    if (response.status === 504 || response.status === 502) {
+                        throw new Error('การประมวลผลใช้เวลานานเกินไป กรุณาลดจำนวนแถวข้อมูลในไฟล์ (แนะนำไม่เกิน 100 แถว)');
+                    } else if (response.status === 413) {
+                        throw new Error('ไฟล์มีขนาดใหญ่เกินไป กรุณาเลือกไฟล์ที่เล็กกว่า 10MB');
+                    } else {
+                        throw new Error(`เกิดข้อผิดพลาด (${response.status}): กรุณาตรวจสอบรูปแบบไฟล์และลองใหม่อีกครั้ง`);
+                    }
+                }
             }
 
         } catch (error) {
