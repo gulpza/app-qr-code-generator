@@ -27,9 +27,7 @@ module.exports = async (req, res) => {
         
         // สร้าง worksheet ด้วย header และ sample data
         const ws = xlsx.utils.aoa_to_sheet([
-            ['Code', 'Name'],  // Header row
-            ['001', 'Sample Item 1'],  // Sample row 1
-            ['002', 'Sample Item 2']   // Sample row 2
+            ['Code', 'Name']  // Header row
         ]);
 
         // ปรับความกว้างคอลัมน์

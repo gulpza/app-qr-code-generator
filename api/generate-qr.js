@@ -128,10 +128,12 @@ module.exports = async (req, res) => {
                 }
             });
 
-            // สร้าง canvas สำหรับรวม QR code กับข้อความ
+            // สร้าง canvas แบบง่าย - แสดงเฉพาะ QR Code ไม่มีข้อความ
+            // (เพราะข้อมูลอยู่ใน QR Code อยู่แล้ว)
             const qrImage = await loadImage(qrBuffer);
-            const canvasWidth = 350;
-            const canvasHeight = 380; // เพิ่มความสูงสำหรับข้อความ
+            const padding = 20;
+            const canvasWidth = qrImage.width + (padding * 2);
+            const canvasHeight = qrImage.height + (padding * 2);
             const canvas = createCanvas(canvasWidth, canvasHeight);
             const ctx = canvas.getContext('2d');
 
@@ -140,30 +142,7 @@ module.exports = async (req, res) => {
             ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
             // วาด QR Code ตรงกลาง
-            const qrX = (canvasWidth - qrImage.width) / 2;
-            const qrY = 20;
-            ctx.drawImage(qrImage, qrX, qrY);
-
-            // เพิ่มข้อความใต้ QR Code
-            const displayText = row.Code ? row.Code.toString() : `Row ${index + 1}`;
-            
-            // วาดพื้นหลังสีขาวสำหรับข้อความ
-            const textBoxY = qrY + qrImage.height + 10;
-            ctx.fillStyle = '#F8F9FA';
-            ctx.fillRect(0, textBoxY, canvasWidth, 50);
-            
-            // วาดข้อความ - ใช้ font ที่เรียบง่ายและรองรับตัวเลข/ภาษาอังกฤษ
-            ctx.fillStyle = '#000000';
-            ctx.font = 'bold 20px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            
-            const textY = textBoxY + 25;
-            
-            // แปลงข้อความเป็น ASCII ถ้าเป็นไปได้ (เพื่อหลีกเลี่ยงปัญหา encoding)
-            // ถ้ามีตัวอักษรพิเศษ ให้แสดงแค่ตัวเลขและภาษาอังกฤษ
-            const safeText = displayText.normalize('NFKD');
-            ctx.fillText(safeText, canvasWidth / 2, textY);
+            ctx.drawImage(qrImage, padding, padding);
 
             // บันทึกเป็นไฟล์ PNG
             const buffer = canvas.toBuffer('image/png');
