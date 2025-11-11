@@ -4,7 +4,15 @@ const QRCode = require('qrcode');
 const archiver = require('archiver');
 const path = require('path');
 const fs = require('fs');
-const { createCanvas, loadImage } = require('canvas');
+const { createCanvas, loadImage, registerFont } = require('canvas');
+
+// ลงทะเบียน Arial font
+try {
+    registerFont(require.resolve('@canvas-fonts/arial/fonts/Arial.ttf'), { family: 'Arial' });
+    registerFont(require.resolve('@canvas-fonts/arial/fonts/Arial Bold.ttf'), { family: 'Arial', weight: 'bold' });
+} catch (err) {
+    console.warn('Could not register Arial font, will use fallback:', err.message);
+}
 
 // ใช้ /tmp directory สำหรับ Vercel
 const tempDir = '/tmp';
@@ -147,22 +155,15 @@ module.exports = async (req, res) => {
             // เพิ่มข้อความใต้ QR Code
             let displayText = row.Code ? row.Code.toString() : `Row ${index + 1}`;
             
-            // แปลงข้อความให้เป็น ASCII ที่ปลอดภัย (ตัวเลขและตัวอักษรภาษาอังกฤษเท่านั้น)
-            // กรองเฉพาะ A-Z, a-z, 0-9, และอักขระพิเศษพื้นฐาน
-            displayText = displayText.replace(/[^\x20-\x7E]/g, '');
-            
-            // ใช้ Courier New ที่เป็น monospace font
+            // ใช้ Arial font ที่เพิ่งลงทะเบียน
             ctx.fillStyle = '#000000';
-            ctx.font = '14px "Courier New", Courier, monospace';
+            ctx.font = 'bold 16px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             
             const textY = padding + qrImage.height + (textHeight / 2);
             
-            // วาดข้อความพร้อม stroke เพื่อให้ชัดเจนขึ้น
-            ctx.strokeStyle = '#FFFFFF';
-            ctx.lineWidth = 3;
-            ctx.strokeText(displayText, canvasWidth / 2, textY);
+            // วาดข้อความ
             ctx.fillText(displayText, canvasWidth / 2, textY);
 
             // บันทึกเป็นไฟล์ PNG

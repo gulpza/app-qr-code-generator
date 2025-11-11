@@ -8,6 +8,7 @@
     "dev": "nodemon server.js"
   },
   "dependencies": {
+    "@canvas-fonts/arial": "^1.0.4",
     "archiver": "^5.3.2",
     "canvas": "^3.2.0",
     "express": "^4.21.2",
