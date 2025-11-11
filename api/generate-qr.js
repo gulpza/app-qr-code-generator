@@ -131,7 +131,7 @@ module.exports = async (req, res) => {
             // สร้าง canvas พร้อมข้อความใต้ QR Code
             const qrImage = await loadImage(qrBuffer);
             const padding = 20;
-            const textHeight = 40; // พื้นที่สำหรับข้อความ
+            const textHeight = 50; // เพิ่มพื้นที่สำหรับข้อความ
             const canvasWidth = qrImage.width + (padding * 2);
             const canvasHeight = qrImage.height + (padding * 2) + textHeight;
             const canvas = createCanvas(canvasWidth, canvasHeight);
@@ -145,14 +145,24 @@ module.exports = async (req, res) => {
             ctx.drawImage(qrImage, padding, padding);
 
             // เพิ่มข้อความใต้ QR Code
-            const displayText = row.Code ? row.Code.toString() : `Row ${index + 1}`;
+            let displayText = row.Code ? row.Code.toString() : `Row ${index + 1}`;
             
+            // แปลงข้อความให้เป็น ASCII ที่ปลอดภัย (ตัวเลขและตัวอักษรภาษาอังกฤษเท่านั้น)
+            // กรองเฉพาะ A-Z, a-z, 0-9, และอักขระพิเศษพื้นฐาน
+            displayText = displayText.replace(/[^\x20-\x7E]/g, '');
+            
+            // ใช้ Courier New ที่เป็น monospace font
             ctx.fillStyle = '#000000';
-            ctx.font = 'bold 18px Arial, sans-serif';
+            ctx.font = '14px "Courier New", Courier, monospace';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             
             const textY = padding + qrImage.height + (textHeight / 2);
+            
+            // วาดข้อความพร้อม stroke เพื่อให้ชัดเจนขึ้น
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 3;
+            ctx.strokeText(displayText, canvasWidth / 2, textY);
             ctx.fillText(displayText, canvasWidth / 2, textY);
 
             // บันทึกเป็นไฟล์ PNG
