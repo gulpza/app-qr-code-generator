@@ -6,12 +6,17 @@ const path = require('path');
 const fs = require('fs');
 const { createCanvas, loadImage, registerFont } = require('canvas');
 
-// ลงทะเบียน Arial font
+// ลงทะเบียน Arial font จากโฟลเดอร์ fonts
 try {
-    registerFont(require.resolve('@canvas-fonts/arial/fonts/Arial.ttf'), { family: 'Arial' });
-    registerFont(require.resolve('@canvas-fonts/arial/fonts/Arial Bold.ttf'), { family: 'Arial', weight: 'bold' });
+    const fontPath = path.join(__dirname, '../fonts/Arial.ttf');
+    if (fs.existsSync(fontPath)) {
+        registerFont(fontPath, { family: 'Arial' });
+        console.log('Arial font registered successfully');
+    } else {
+        console.warn('Arial font file not found at:', fontPath);
+    }
 } catch (err) {
-    console.warn('Could not register Arial font, will use fallback:', err.message);
+    console.warn('Could not register Arial font:', err.message);
 }
 
 // ใช้ /tmp directory สำหรับ Vercel
